@@ -26,7 +26,6 @@ env.read_env(env_file=BASE_DIR.parent / '.env')
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-o#1&n^qu-z+=-)u*rh@4%-&$_p0t#em0x+-d^q3@0xw%@px-y6'
 
 SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -84,16 +83,7 @@ WSGI_APPLICATION = 'movie_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'movie_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'Bong0961321805',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
+
 
 DATABASES = {
     'default': env.db()
