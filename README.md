@@ -1,5 +1,7 @@
 ---
 
+link test api https://be-k3g5.onrender.com/api/
+
 # 🎬 API Backend Website Xem Phim (Django + PostgreSQL)
 
 Đây là hệ thống backend đơn giản phục vụ cho một website xem phim. Dự án này cung cấp các API REST để:
