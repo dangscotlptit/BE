@@ -12,20 +12,29 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+import environ, os
+
+env = environ.Env()
+# environ.Env.read_env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env.read_env(env_file=BASE_DIR.parent / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-o#1&n^qu-z+=-)u*rh@4%-&$_p0t#em0x+-d^q3@0xw%@px-y6'
+# SECRET_KEY = 'django-insecure-o#1&n^qu-z+=-)u*rh@4%-&$_p0t#em0x+-d^q3@0xw%@px-y6'
 
+SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
-ALLOWED_HOSTS = []
+DEBUG = env.bool("DEBUG", default=False)
+
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -49,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'movie_site.urls'
@@ -74,17 +84,20 @@ WSGI_APPLICATION = 'movie_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'movie_db',
-        'USER': 'root',
-        'PASSWORD': '123456',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'movie_db',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Bong0961321805',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
+DATABASES = {
+    'default': env.db()
+}
 
 
 # Password validation
@@ -123,7 +136,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
