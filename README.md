@@ -1,29 +1,31 @@
 ---
+Test api: https://be-k3g5.onrender.com/api/
+---
 
-link test api https://be-k3g5.onrender.com/api/
+# API Backend Website Xem Phim (Django + PostgreSQL)
 
-# 🎬 API Backend Website Xem Phim (Django + PostgreSQL)
-
-Đây là hệ thống backend đơn giản phục vụ cho một website xem phim. Dự án này cung cấp các API REST để:
+Đây là hệ thống backend đơn giản phục vụ cho một website xem phim. Dự án cung cấp các API REST để:
 
 - Xem danh sách phim
 - Xem chi tiết từng phim
+- Tìm kiếm phim theo tiêu đề
 - Xem video của phim
-- Thêm / sửa / xóa phim thông qua API
+- Thêm / sửa / xoá phim (chỉ dành cho tài khoản admin)
 
 ---
 
-## 🚀 Công nghệ sử dụng
+## Công nghệ sử dụng
 
 - Python 3
 - Django & Django REST Framework
 - PostgreSQL (Render cung cấp miễn phí)
-- Gunicorn (chạy production)
-- Render.com (triển khai hosting)
+- JWT (xác thực bằng token)
+- Gunicorn (production server)
+- Render.com (triển khai hosting miễn phí)
 
 ---
 
-## 🔧 Hướng dẫn chạy dự án trên máy cá nhân (Windows / macOS / Linux)
+## Hướng dẫn chạy trên máy cá nhân (Windows/macOS/Linux)
 
 ### 1. Clone dự án
 
@@ -32,7 +34,7 @@ git clone https://github.com/dangscotlptit/BE.git
 cd BE
 ````
 
-### 2. Tạo môi trường ảo và kích hoạt
+### 2. Tạo môi trường ảo & kích hoạt
 
 ```bash
 python -m venv venv
@@ -42,7 +44,7 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### 3. Cài đặt thư viện
+### 3. Cài thư viện
 
 ```bash
 pip install -r requirements.txt
@@ -56,11 +58,9 @@ SECRET_KEY=your-secret-key
 DATABASE_URL=postgres://user:pass@localhost:5432/movie_db
 ```
 
-> Nếu dùng MySQL: đổi `DATABASE_URL` cho phù hợp.
-
 ---
 
-### 5. Chạy migrate và khởi động server
+### 5. Chạy migrate & server
 
 ```bash
 python manage.py migrate
@@ -69,16 +69,57 @@ python manage.py runserver
 
 ---
 
-## 🌐 Danh sách API
+## Danh sách API
 
-| Method | Endpoint                  | Chức năng          |
-| ------ | ------------------------- | ------------------ |
-| GET    | `/api/movies/`            | Lấy danh sách phim |
-| POST   | `/api/movies/`            | Thêm phim mới      |
-| GET    | `/api/movies/<id>/`       | Chi tiết phim      |
-| PUT    | `/api/movies/<id>/`       | Cập nhật phim      |
-| DELETE | `/api/movies/<id>/`       | Xoá phim           |
-| GET    | `/api/movies/<id>/watch/` | Lấy link xem phim  |
+| Method | Endpoint                  | Chức năng                           | Quyền truy cập |
+| ------ | ------------------------- | ----------------------------------- | -------------- |
+| GET    | `/api/movies/`            | Lấy danh sách phim, hỗ trợ `search` | Mọi người      |
+| POST   | `/api/movies/`            | Thêm phim mới                       | Chỉ admin      |
+| GET    | `/api/movies/<id>/`       | Chi tiết phim                       | Mọi người      |
+| PUT    | `/api/movies/<id>/`       | Cập nhật phim                       | Chỉ admin      |
+| DELETE | `/api/movies/<id>/`       | Xoá phim                            | Chỉ admin      |
+| GET    | `/api/movies/<id>/watch/` | Lấy link xem phim                   | Mọi người      |
+| POST   | `/api/token/`             | Đăng nhập, nhận JWT token           | Chỉ admin      |
+| POST   | `/api/token/refresh/`     | Làm mới access token                | Chỉ admin      |
+
+---
+
+## Xác thực người dùng (JWT)
+
+* Tạo tài khoản admin:
+
+  ```bash
+  python manage.py createsuperuser
+  ```
+
+* Đăng nhập bằng API:
+
+  ```http
+  POST /api/token/
+  Content-Type: application/json
+  {
+    "username": "admin",
+    "password": "yourpassword"
+  }
+  ```
+
+* Gửi các request có yêu cầu quyền bằng:
+
+  ```http
+  Authorization: Bearer <access_token>
+  ```
+
+---
+
+## Tìm kiếm phim theo tiêu đề
+
+```http
+GET /api/movies/?search=batman
+```
+
+Trả về danh sách phim có từ khoá "batman" trong tiêu đề.
+
+---
 
 ## Ví dụ dữ liệu phim (JSON)
 
@@ -109,7 +150,7 @@ movie_site/
 ├── manage.py
 ├── requirements.txt
 ├── Procfile
-├── .env (không push lên GitHub)
+├── .env (không commit)
 ```
 
 ---
