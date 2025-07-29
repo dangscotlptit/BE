@@ -1,5 +1,5 @@
 ---
-Test api: https://be-k3g5.onrender.com/api/
+Test api: https://be-k3g5.onrender.com/
 ---
 
 # API Backend Website Xem Phim (Django + PostgreSQL)
