@@ -1,15 +1,28 @@
+Dưới đây là bản **cập nhật đầy đủ `README.md`** với nội dung:
+
+* ✅ Tách riêng API cho **bình luận** và **đánh giá** phim
+* ✅ Giải thích rõ chức năng và cách sử dụng từng API
+* ✅ Cập nhật bảng API mới
+* ✅ Ví dụ `POST` dữ liệu đánh giá / bình luận
+
+---
+
+### ✅ `README.md` (đã cập nhật)
+
+````markdown
 ---
 Test api: https://be-k3g5.onrender.com/
 ---
 
 # API Backend Website Xem Phim (Django + PostgreSQL)
 
-Đây là hệ thống backend đơn giản phục vụ cho một website xem phim. Dự án cung cấp các API REST để:
+Dự án backend đơn giản cho một website xem phim, cung cấp các API REST để:
 
 - Xem danh sách phim
 - Xem chi tiết từng phim
 - Tìm kiếm phim theo tiêu đề
 - Xem video của phim
+- Bình luận và đánh giá phim (tách riêng)
 - Thêm / sửa / xoá phim (chỉ dành cho tài khoản admin)
 
 ---
@@ -25,7 +38,7 @@ Test api: https://be-k3g5.onrender.com/
 
 ---
 
-## Hướng dẫn chạy trên máy cá nhân (Windows/macOS/Linux)
+## Hướng dẫn chạy trên máy cá nhân
 
 ### 1. Clone dự án
 
@@ -71,78 +84,93 @@ python manage.py runserver
 
 ## Danh sách API
 
-| Method | Endpoint                  | Chức năng                           | Quyền truy cập |
-| ------ | ------------------------- | ----------------------------------- | -------------- |
-| GET    | `/api/movies/`            | Lấy danh sách phim, hỗ trợ `search` | Mọi người      |
-| POST   | `/api/movies/`            | Thêm phim mới                       | Chỉ admin      |
-| GET    | `/api/movies/<id>/`       | Chi tiết phim                       | Mọi người      |
-| PUT    | `/api/movies/<id>/`       | Cập nhật phim                       | Chỉ admin      |
-| DELETE | `/api/movies/<id>/`       | Xoá phim                            | Chỉ admin      |
-| GET    | `/api/movies/<id>/watch/` | Lấy link xem phim                   | Mọi người      |
-| POST   | `/api/token/`             | Đăng nhập, nhận JWT token           | Chỉ admin      |
-| POST   | `/api/token/refresh/`     | Làm mới access token                | Chỉ admin      |
+| Method | Endpoint                     | Chức năng                       | Quyền truy cập |
+| ------ | ---------------------------- | ------------------------------- | -------------- |
+| GET    | `/api/movies/`               | Lấy danh sách phim (`search`)   | Mọi người      |
+| POST   | `/api/movies/`               | Thêm phim mới                   | Chỉ admin      |
+| GET    | `/api/movies/<id>/`          | Chi tiết phim + điểm trung bình | Mọi người      |
+| PUT    | `/api/movies/<id>/`          | Cập nhật phim                   | Chỉ admin      |
+| DELETE | `/api/movies/<id>/`          | Xoá phim                        | Chỉ admin      |
+| GET    | `/api/movies/<id>/watch/`    | Lấy link xem phim               | Mọi người      |
+| GET    | `/api/movies/<id>/comments/` | Xem bình luận                   | Mọi người      |
+| POST   | `/api/movies/<id>/comments/` | Gửi bình luận                   | Mọi người      |
+| GET    | `/api/movies/<id>/ratings/`  | Xem danh sách đánh giá          | Mọi người      |
+| POST   | `/api/movies/<id>/ratings/`  | Gửi đánh giá (1–5 sao)          | Mọi người      |
+| POST   | `/api/token/`                | Đăng nhập, nhận JWT token       | Chỉ admin      |
+| POST   | `/api/token/refresh/`        | Làm mới access token            | Chỉ admin      |
 
 ---
 
-## Xác thực người dùng (JWT)
+## 🔐 Xác thực người dùng (JWT)
 
-* Tạo tài khoản admin:
+Tạo tài khoản admin:
 
-  ```bash
-  python manage.py createsuperuser
-  ```
-
-* Đăng nhập bằng API:
-
-  ```http
-  POST /api/token/
-  Content-Type: application/json
-  {
-    "username": "admin",
-    "password": "yourpassword"
-  }
-  ```
-
-* Gửi các request có yêu cầu quyền bằng:
-
-  ```http
-  Authorization: Bearer <access_token>
-  ```
-
----
-
-## Tìm kiếm phim theo tiêu đề
-
-```http
-GET /api/movies/?search=batman
+```bash
+python manage.py createsuperuser
 ```
 
-Trả về danh sách phim có từ khoá "batman" trong tiêu đề.
+Đăng nhập để lấy token:
+
+```http
+POST /api/token/
+Content-Type: application/json
+{
+  "username": "admin",
+  "password": "yourpassword"
+}
+```
+
+Gửi các request có quyền bằng:
+
+```http
+Authorization: Bearer <access_token>
+```
 
 ---
 
-## Ví dụ dữ liệu phim (JSON)
+## 🔍 Tìm kiếm phim
 
-```json
+```http
+GET /api/movies/?search=inception
+```
+
+---
+
+## 💬 Gửi bình luận phim
+
+```http
+POST /api/movies/5/comments/
+Content-Type: application/json
+
 {
-  "title": "Inception",
-  "description": "Phim khoa học viễn tưởng",
-  "video_url": "https://example.com/inception.mp4",
-  "poster_url": "https://example.com/inception.jpg",
-  "release_year": 2010
+  "name": "Nguyễn Văn A",
+  "content": "Phim rất hay, nên xem!"
 }
 ```
 
 ---
 
-## Cấu trúc dự án
+## ⭐️ Gửi đánh giá phim (1 đến 5 sao)
+
+```http
+POST /api/movies/5/ratings/
+Content-Type: application/json
+
+{
+  "score": 4
+}
+```
+
+---
+
+## 📂 Cấu trúc dự án
 
 ```
 movie_site/
 ├── movies/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
+│   ├── models.py         # Movie, Comment, Rating
+│   ├── serializers.py    # MovieSerializer, CommentSerializer, RatingSerializer
+│   ├── views.py          # API cho phim, bình luận, đánh giá
 │   ├── urls.py
 ├── movie_site/
 │   ├── settings.py
@@ -154,4 +182,3 @@ movie_site/
 ```
 
 ---
-

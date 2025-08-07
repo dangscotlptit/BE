@@ -1,7 +1,7 @@
 from rest_framework import generics, status, permissions, filters
 from rest_framework.response import Response
-from .models import Movie
-from .serializers import MovieSerializer
+from .models import Movie, Comment, Rating
+from .serializers import MovieSerializer, CommentSerializer, RatingSerializer
 
 # 🔍 Lấy danh sách phim + tạo mới (chỉ admin)
 class MovieListCreate(generics.ListCreateAPIView):
@@ -35,3 +35,22 @@ class WatchMovie(generics.RetrieveAPIView):
         except Movie.DoesNotExist:
             return Response({"error": "Movie not found"}, status=404)
         return Response({"video_url": movie.video_url})
+
+class RatingListCreate(generics.ListCreateAPIView):
+    serializer_class = RatingSerializer
+
+    def get_queryset(self):
+        return Rating.objects.filter(movie_id=self.kwargs['movie_id'])
+
+    def perform_create(self, serializer):
+        serializer.save(movie_id=self.kwargs['movie_id'])
+
+
+class CommentListCreate(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        return Comment.objects.filter(movie_id=self.kwargs['movie_id'])
+
+    def perform_create(self, serializer):
+        serializer.save(movie_id=self.kwargs['movie_id'])
