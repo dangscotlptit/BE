@@ -1,15 +1,3 @@
-Dưới đây là bản **cập nhật đầy đủ `README.md`** với nội dung:
-
-* ✅ Tách riêng API cho **bình luận** và **đánh giá** phim
-* ✅ Giải thích rõ chức năng và cách sử dụng từng API
-* ✅ Cập nhật bảng API mới
-* ✅ Ví dụ `POST` dữ liệu đánh giá / bình luận
-
----
-
-### ✅ `README.md` (đã cập nhật)
-
-````markdown
 ---
 Test api: https://be-k3g5.onrender.com/
 ---
