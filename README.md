@@ -12,6 +12,9 @@ Dự án backend đơn giản cho một website xem phim, cung cấp các API RE
 - Xem video của phim
 - Bình luận và đánh giá phim (tách riêng)
 - Thêm / sửa / xoá phim (chỉ dành cho tài khoản admin)
+- Quản lý thể loại phim (genre)
+  - Thêm / sửa / xoá thể loại (admin)
+  - Lọc phim theo thể loại
 
 ---
 
@@ -72,20 +75,28 @@ python manage.py runserver
 
 ## Danh sách API
 
-| Method | Endpoint                     | Chức năng                       | Quyền truy cập |
-| ------ | ---------------------------- | ------------------------------- | -------------- |
-| GET    | `/api/movies/`               | Lấy danh sách phim (`search`)   | Mọi người      |
-| POST   | `/api/movies/`               | Thêm phim mới                   | Chỉ admin      |
-| GET    | `/api/movies/<id>/`          | Chi tiết phim + điểm trung bình | Mọi người      |
-| PUT    | `/api/movies/<id>/`          | Cập nhật phim                   | Chỉ admin      |
-| DELETE | `/api/movies/<id>/`          | Xoá phim                        | Chỉ admin      |
-| GET    | `/api/movies/<id>/watch/`    | Lấy link xem phim               | Mọi người      |
-| GET    | `/api/movies/<id>/comments/` | Xem bình luận                   | Mọi người      |
-| POST   | `/api/movies/<id>/comments/` | Gửi bình luận                   | Mọi người      |
-| GET    | `/api/movies/<id>/ratings/`  | Xem danh sách đánh giá          | Mọi người      |
-| POST   | `/api/movies/<id>/ratings/`  | Gửi đánh giá (1–5 sao)          | Mọi người      |
-| POST   | `/api/token/`                | Đăng nhập, nhận JWT token       | Chỉ admin      |
-| POST   | `/api/token/refresh/`        | Làm mới access token            | Chỉ admin      |
+| Method | Endpoint                            | Chức năng                                  | Quyền truy cập |
+|--------|--------------------------------------|---------------------------------------------|----------------|
+| GET    | `/api/movies/`                      | Lấy danh sách phim (`search`)              | Mọi người      |
+| POST   | `/api/movies/`                      | Thêm phim mới                              | Chỉ admin      |
+| GET    | `/api/movies/<id>/`                 | Chi tiết phim + điểm trung bình            | Mọi người      |
+| PUT    | `/api/movies/<id>/`                 | Cập nhật phim                              | Chỉ admin      |
+| PATCH  | `/api/movies/<id>/`                 | Cập nhật 1 phần                            | Chỉ admin      |
+| DELETE | `/api/movies/<id>/`                 | Xoá phim                                   | Chỉ admin      |
+| GET    | `/api/movies/<id>/watch/`           | Lấy link xem phim                          | Mọi người      |
+| GET    | `/api/movies/<id>/comments/`        | Xem bình luận                              | Mọi người      |
+| POST   | `/api/movies/<id>/comments/`        | Gửi bình luận                              | Mọi người      |
+| GET    | `/api/movies/<id>/ratings/`         | Xem danh sách đánh giá                     | Mọi người      |
+| POST   | `/api/movies/<id>/ratings/`         | Gửi đánh giá (1–5 sao)                     | Mọi người      |
+| GET    | `/api/genres/`                      | Danh sách thể loại                         | Mọi người      |
+| POST   | `/api/genres/`                      | Thêm thể loại                              | Chỉ admin      |
+| GET    | `/api/genres/<id>/`                 | Chi tiết thể loại                          | Mọi người      |
+| PUT    | `/api/genres/<id>/`                 | Cập nhật thể loại                          | Chỉ admin      |
+| PATCH  | `/api/genres/<id>/`                 | Cập nhật 1 phần thể loại                   | Chỉ admin      |
+| DELETE | `/api/genres/<id>/`                 | Xoá thể loại (nếu không được sử dụng)     | Chỉ admin      |
+| GET    | `/api/genres/<id>/movies/`          | Lấy danh sách phim theo thể loại          | Mọi người      |
+| POST   | `/api/token/`                       | Đăng nhập, nhận JWT token                  | Chỉ admin      |
+| POST   | `/api/token/refresh/`               | Làm mới access token                       | Chỉ admin      |
 
 ---
 
@@ -122,6 +133,12 @@ Authorization: Bearer <access_token>
 GET /api/movies/?search=inception
 ```
 
+## 🎞 Lọc phim theo thể loại
+
+```http
+GET /api/genres/1/movies/  # ID của thể loại
+```
+
 ---
 
 ## 💬 Gửi bình luận phim
@@ -156,9 +173,9 @@ Content-Type: application/json
 ```
 movie_site/
 ├── movies/
-│   ├── models.py         # Movie, Comment, Rating
-│   ├── serializers.py    # MovieSerializer, CommentSerializer, RatingSerializer
-│   ├── views.py          # API cho phim, bình luận, đánh giá
+│   ├── models.py         # Movie, Comment, Rating, Genre
+│   ├── serializers.py    # MovieSerializer, CommentSerializer, RatingSerializer, GenreSerializer
+│   ├── views.py          # API cho phim, bình luận, đánh giá, thể loại
 │   ├── urls.py
 ├── movie_site/
 │   ├── settings.py

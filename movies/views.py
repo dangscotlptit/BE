@@ -1,14 +1,15 @@
 from rest_framework import generics, status, permissions, filters
 from rest_framework.response import Response
-from .models import Movie, Comment, Rating
-from .serializers import MovieSerializer, CommentSerializer, RatingSerializer
+from rest_framework.exceptions import ValidationError
+from .models import Movie, Comment, Rating, Genre
+from .serializers import MovieSerializer, CommentSerializer, RatingSerializer, GenreSerializer
 
 # 🔍 Lấy danh sách phim + tạo mới (chỉ admin)
 class MovieListCreate(generics.ListCreateAPIView):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['title']
+    search_fields = ['title', 'genres__name']
 
     def get_permissions(self):
         if self.request.method == 'POST':
@@ -21,7 +22,7 @@ class MovieRetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MovieSerializer
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'DELETE']:
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return []
 
@@ -45,7 +46,6 @@ class RatingListCreate(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(movie_id=self.kwargs['movie_id'])
 
-
 class CommentListCreate(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
 
@@ -54,3 +54,60 @@ class CommentListCreate(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(movie_id=self.kwargs['movie_id'])
+
+# 📂 API thể loại phim
+class GenreListCreate(generics.ListCreateAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
+        return []
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get("name", "").strip().title()
+
+        if not name:
+            raise ValidationError({"error": "Tên thể loại không được để trống."})
+
+        if Genre.objects.filter(name__iexact=name).exists():
+            raise ValidationError({"error": f"Thể loại '{name}' đã tồn tại."})
+
+        request.data["name"] = name
+        return super().create(request, *args, **kwargs)
+
+class GenreRetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+
+    def destroy(self, request, *args, **kwargs):
+        genre = self.get_object()
+        if genre.movies.exists():
+            raise ValidationError({
+                "error": "Không thể xoá thể loại vì đang được sử dụng bởi một hoặc nhiều bộ phim."
+            })
+        return super().destroy(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        genre = self.get_object()
+        new_name = request.data.get("name", "").strip().title()
+
+        if not new_name:
+            raise ValidationError({"error": "Tên thể loại không được để trống."})
+
+        if Genre.objects.exclude(id=genre.id).filter(name__iexact=new_name).exists():
+            raise ValidationError({
+                "error": f"Thể loại '{new_name}' đã tồn tại. Không thể cập nhật."
+            })
+
+        request.data["name"] = new_name
+        return super().update(request, *args, **kwargs)
+    
+class MoviesByGenre(generics.ListAPIView):
+    serializer_class = MovieSerializer
+
+    def get_queryset(self):
+        genre_id = self.kwargs['genre_id']
+        return Movie.objects.filter(genres__id=genre_id)
