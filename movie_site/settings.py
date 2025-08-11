@@ -134,7 +134,7 @@ USE_TZ = True
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),     # Access token sống 1 phút
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),     # Access token sống 1 ngày
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),        # Refresh token sống 7 ngày
     "ROTATE_REFRESH_TOKENS": False,                     # Có tạo refresh token mới mỗi lần dùng không?
     "BLACKLIST_AFTER_ROTATION": True,                   # Có block token cũ sau khi rotate không?
