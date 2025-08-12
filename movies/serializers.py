@@ -18,42 +18,55 @@ class CommentSerializer(serializers.ModelSerializer):
         }
 
 class GenreSerializer(serializers.ModelSerializer):
+    # Loại bỏ unique validator mặc định để tránh lỗi khi dùng nested creation
+    name = serializers.CharField(validators=[], allow_blank=False)
+
     class Meta:
         model = Genre
         fields = ['id', 'name']
 
+    def validate_name(self, value):
+        # Chuẩn hoá và kiểm tra rỗng
+        value = value.strip().title()
+        if not value:
+            raise serializers.ValidationError("Tên thể loại không được để trống.")
+        return value
+
 class MovieSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
-    genres = GenreSerializer(many=True)
+    # Dùng cho input
+    genre_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Genre.objects.all(),
+        write_only=True,
+        required=True,
+        allow_empty=False
+    )
+    # Dùng cho output
+    genres = GenreSerializer(read_only=True, many=True)
 
     class Meta:
         model = Movie
         fields = [
             'id', 'title', 'description', 'video_url', 'poster_url',
-            'release_year', 'genres', 'average_rating', 'rating_count'
+            'release_year', 'genre_ids', 'genres',
+            'average_rating', 'rating_count'
         ]
 
     def create(self, validated_data):
-        genres_data = validated_data.pop('genres', [])
+        genres = validated_data.pop('genre_ids', [])
         movie = Movie.objects.create(**validated_data)
-        for genre in genres_data:
-            g, _ = Genre.objects.get_or_create(**genre)
-            movie.genres.add(g)
+        movie.genres.set(genres)
         return movie
 
     def update(self, instance, validated_data):
-        genres_data = validated_data.pop('genres', None)
+        genres = validated_data.pop('genre_ids', None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
-
-        if genres_data is not None:
-            instance.genres.clear()
-            for genre in genres_data:
-                g, _ = Genre.objects.get_or_create(**genre)
-                instance.genres.add(g)
-
+        if genres is not None:
+            instance.genres.set(genres)
         return instance
     
     def get_average_rating(self, obj):
