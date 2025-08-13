@@ -10,12 +10,17 @@ class RatingSerializer(serializers.ModelSerializer):
         }
 
 class CommentSerializer(serializers.ModelSerializer):
+    replies = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
         fields = '__all__'
         extra_kwargs = {
             'movie': {'required': False}  
         }
+
+    def get_replies(self, obj):
+        return CommentSerializer(obj.replies.all(), many=True).data
 
 class GenreSerializer(serializers.ModelSerializer):
     # Loại bỏ unique validator mặc định để tránh lỗi khi dùng nested creation
@@ -35,6 +40,9 @@ class GenreSerializer(serializers.ModelSerializer):
 class MovieSerializer(serializers.ModelSerializer):
     average_rating = serializers.SerializerMethodField()
     rating_count = serializers.SerializerMethodField()
+    views = serializers.IntegerField(read_only=True)
+    likes = serializers.IntegerField(read_only=True)
+    dislikes = serializers.IntegerField(read_only=True)
     # Dùng cho input
     genre_ids = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -51,7 +59,7 @@ class MovieSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'video_url', 'poster_url',
             'release_year', 'genre_ids', 'genres',
-            'average_rating', 'rating_count'
+            'average_rating', 'rating_count', 'views', 'likes', 'dislikes'
         ]
 
     def create(self, validated_data):
