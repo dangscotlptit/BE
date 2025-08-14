@@ -10,7 +10,9 @@ Dự án backend đơn giản cho một website xem phim, cung cấp các API RE
 - Xem chi tiết từng phim
 - Tìm kiếm phim theo tiêu đề
 - Xem video của phim
+- like, dislike phim
 - Bình luận và đánh giá phim (tách riêng)
+- like, dislike, trả lời bình luận
 - Thêm / sửa / xoá phim (chỉ dành cho tài khoản admin)
 - Quản lý thể loại phim (genre)
   - Thêm / sửa / xoá thể loại (admin)
@@ -76,7 +78,7 @@ python manage.py runserver
 ## Danh sách API
 
 | Method | Endpoint                            | Chức năng                                  | Quyền truy cập |
-|--------|--------------------------------------|---------------------------------------------|----------------|
+|--------|-------------------------------------|--------------------------------------------|----------------|
 | GET    | `/api/movies/`                      | Lấy danh sách phim (`search`)              | Mọi người      |
 | POST   | `/api/movies/`                      | Thêm phim mới                              | Chỉ admin      |
 | GET    | `/api/movies/<id>/`                 | Chi tiết phim + điểm trung bình            | Mọi người      |
@@ -93,14 +95,19 @@ python manage.py runserver
 | GET    | `/api/genres/<id>/`                 | Chi tiết thể loại                          | Mọi người      |
 | PUT    | `/api/genres/<id>/`                 | Cập nhật thể loại                          | Chỉ admin      |
 | PATCH  | `/api/genres/<id>/`                 | Cập nhật 1 phần thể loại                   | Chỉ admin      |
-| DELETE | `/api/genres/<id>/`                 | Xoá thể loại (nếu không được sử dụng)     | Chỉ admin      |
-| GET    | `/api/genres/<id>/movies/`          | Lấy danh sách phim theo thể loại          | Mọi người      |
+| DELETE | `/api/genres/<id>/`                 | Xoá thể loại (nếu không được sử dụng)      | Chỉ admin      |
+| GET    | `/api/genres/<id>/movies/`          | Lấy danh sách phim theo thể loại           | Mọi người      |
 | POST   | `/api/token/`                       | Đăng nhập, nhận JWT token                  | Chỉ admin      |
 | POST   | `/api/token/refresh/`               | Làm mới access token                       | Chỉ admin      |
-
+| POST   | `/api/movies/<id>/like/`            | Tăng lượt like cho phim                    | Mọi người      |
+| POST   | `/api/movies/<id>/dislike/`         | Tăng lượt dislike cho phim                 | Mọi người      |
+| POST   | `/api/comments/<id>/like/`          | Tăng lượt like cho bình luận               | Mọi người      |
+| POST   | `/api/comments/<id>/dislike/`       | Tăng lượt dislike cho bình luận            | Mọi người      |
+| DELETE | `/api/comments/<id>/`               | Xóa bình luận                              | Chỉ admin      |
+| GET    | `/api/movies/<id>/watch/`           | Xem phim và tự động tăng lượt xem          | Mọi người      |
 ---
 
-## 🔐 Xác thực người dùng (JWT)
+## Xác thực người dùng (JWT)
 
 Tạo tài khoản admin:
 
@@ -127,13 +134,13 @@ Authorization: Bearer <access_token>
 
 ---
 
-## 🔍 Tìm kiếm phim
+## Tìm kiếm phim
 
 ```http
 GET /api/movies/?search=inception
 ```
 
-## 🎞 Lọc phim theo thể loại
+## Lọc phim theo thể loại
 
 ```http
 GET /api/genres/1/movies/  # ID của thể loại
@@ -141,7 +148,7 @@ GET /api/genres/1/movies/  # ID của thể loại
 
 ---
 
-## 💬 Gửi bình luận phim
+## Gửi bình luận phim
 
 ```http
 POST /api/movies/5/comments/
@@ -155,7 +162,7 @@ Content-Type: application/json
 
 ---
 
-## ⭐️ Gửi đánh giá phim (1 đến 5 sao)
+## Gửi đánh giá phim (1 đến 5 sao)
 
 ```http
 POST /api/movies/5/ratings/
@@ -168,6 +175,125 @@ Content-Type: application/json
 
 ---
 
+## Xem phim (tự tăng lượt xem)
+```
+GET /api/movies/5/watch/
+```
+**Response:**
+```json
+{ "video_url": "https://example.com/inception.mp4" }
+```
+
+---
+
+## Like phim
+```
+POST /api/movies/5/like/
+```
+**Response:**
+```json
+{ "likes": 4 }
+```
+
+---
+
+## Dislike phim
+```
+POST /api/movies/5/dislike/
+```
+**Response:**
+```json
+{ "dislikes": 1 }
+```
+
+---
+
+## Gửi bình luận
+```
+POST /api/movies/5/comments/
+Content-Type: application/json
+
+{
+  "name": "Nguyễn Văn A",
+  "content": "Phim rất hay!"
+}
+```
+**Response:**
+```json
+{
+  "id": 12,
+  "movie": 5,
+  "parent": null,
+  "name": "Nguyễn Văn A",
+  "content": "Phim rất hay!",
+  "likes": 0,
+  "dislikes": 0,
+  "created_at": "2025-08-13T15:12:45.123Z",
+  "replies": []
+}
+```
+
+---
+
+## Trả lời bình luận
+```
+POST /api/movies/5/comments/
+Content-Type: application/json
+
+{
+  "parent": 12,
+  "name": "Trần Văn B",
+  "content": "Đồng ý với bạn!"
+}
+```
+**Response:**
+```json
+{
+  "id": 13,
+  "movie": 5,
+  "parent": 12,
+  "name": "Trần Văn B",
+  "content": "Đồng ý với bạn!",
+  "likes": 0,
+  "dislikes": 0,
+  "created_at": "2025-08-13T15:14:30.456Z",
+  "replies": []
+}
+```
+
+---
+
+## Like bình luận
+```
+POST /api/comments/12/like/
+```
+**Response:**
+```json
+{ "likes": 1 }
+```
+
+---
+
+## Dislike bình luận
+```
+POST /api/comments/12/dislike/
+```
+**Response:**
+```json
+{ "dislikes": 1 }
+```
+
+---
+
+## Xóa bình luận (Admin)
+```
+DELETE /api/comments/12/
+Authorization: Bearer <admin_access_token>
+```
+**Response:**
+```json
+{ "detail": "Xóa thành công" }
+```
 ## 📂 Cấu trúc dự án
 
 ```
